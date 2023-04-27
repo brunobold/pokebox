@@ -5,6 +5,7 @@
 <a href="https://supabase.com/"><img src="https://img.shields.io/badge/Made%20with-Supabase-darkgreen.svg"></a>
 
 <strong>A Pokemon Generation 1-9 Save File Manager built using NextJS and Supabase</strong>
+<strong>Read the development documentation/writeup on my website [here](https://www.brunobold.com/projects/pokebox)</strong>
 
 # What is this?
 

@@ -6,6 +6,8 @@
 
 <strong>A Pokemon Generation 1-9 Save File Manager built using NextJS and Supabase</strong>
 
+<strong>Read the development documentation/writeup on my website [here](https://www.brunobold.com/projects/pokebox)</strong>
+
 # What is this?
 
 This repository contains all the source for a project that I am currently working on after taking interest in <a href="https://github.com/kwsch/PKHeX">PKHeX</a>, which is a Pokemon core save editor built in C#.

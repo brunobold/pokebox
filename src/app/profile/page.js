@@ -25,6 +25,11 @@ export default async function Profile() {
         Go Home
       </Link>
       <SignOut />
+
+      <input
+        type="file"
+        id="file_inptu"
+      />
     </div>
   );
 }

@@ -46,7 +46,7 @@ const SignIn = () => {
               className={cn('input', errors.email && touched.email && 'bg-red-50')}
               id="email"
               name="email"
-              placeholder="dave@dave.com"
+              placeholder="email@email.com"
               type="email"
             />
             {errors.email && touched.email ? (

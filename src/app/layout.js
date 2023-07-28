@@ -21,7 +21,7 @@ export default async function RootLayout({ children }) {
       <head>
         <title>PokeBox</title>
       </head>
-      <body>
+      <body suppressHydrationWarning={true}>
         <div className="flex min-h-screen flex-col items-center justify-center py-2">
           <main className="flex w-full flex-1 shrink-0 flex-col items-center justify-center px-8 text-center sm:px-20">
             <h1 className="mb-12 text-5xl font-bold sm:text-6xl">

@@ -21,15 +21,15 @@ export default async function Profile() {
       <code className="highlight">{user.email}</code>
       <div className="heading">Last Signed In:</div>
       <code className="highlight">{new Date(user.last_sign_in_at).toUTCString()}</code>
-      <Link className="button" href="/">
-        Go Home
-      </Link>
+      <div className="flex space-x-4">
+        <Link className="button" href="/">
+          Go Home
+        </Link>
+        <Link className="button" href="/profile/upload">
+          Upload
+        </Link>
+      </div>
       <SignOut />
-
-      <input
-        type="file"
-        id="file_inptu"
-      />
     </div>
   );
 }

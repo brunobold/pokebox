@@ -1,19 +1,25 @@
 "use client";
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import Link from "next/link";
+import { useState, useEffect } from "react";
+// import { useQuery } from "@apollo/client";
+// import gql from "graphql-tag";
 
 import supabase from "src/lib/supabase-browser";
+import pokeApiClient from "@/lib/pokeClient";
 
 export default function ProfileUpload() {
   const [sessionData, setSessionData] = useState(null);
+
   const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState("");
+
   const [mainCharTranslatedName, setMainCharTranslatedName] = useState("");
   const [rivalTranslatedName, setRivalTranslatedName] = useState("");
 
   useEffect(() => {
     async function getData() {
       const { data } = await supabase.auth.getSession();
-      setSessionData(data); // Update session data state
+      setSessionData(data);
     }
     getData();
   }, []);
@@ -21,8 +27,9 @@ export default function ProfileUpload() {
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     setFile(selectedFile);
-  }
+  };
 
+  // prettier-ignore
   var charMap = {
     "50": "\0", "7F": " ",
     "80": "A", "81": "B", "82": "C", "83": "D", "84": "E",
@@ -50,72 +57,142 @@ export default function ProfileUpload() {
     if (file) {
       try {
         const arrayBuffer = await toArrayBuffer(file);
-        const mainCharOffset = 0x2598; // Main character offset value in hexadecimal
-        const mainCharSize = 0xB; // Main character size value in decimal
-        const rivalOffset = 0x25F6; // Rival offset value in hexadecimal
-        const rivalSize = 0xB; // Rival size value in decimal
-        const seenOffset = 0x25B6;
-        const seenSize = 0x13	;
-  
-        const mainCharHexData = getHexData(arrayBuffer, mainCharOffset, mainCharSize);
-        const mainCharTranslatedData = translateHexString(mainCharHexData, charMap);
+        const mainCharOffset = 0x2598;
+        const mainCharSize = 0xb;
+        const rivalOffset = 0x25f6;
+        const rivalSize = 0xb;
+        const seenOffset = 0x25b6;
+        const seenSize = 0x13;
+
+        const mainCharHexData = getHexData(
+          arrayBuffer,
+          mainCharOffset,
+          mainCharSize
+        );
+        const mainCharTranslatedData = translateHexString(
+          mainCharHexData,
+          charMap
+        );
         console.log("Main Character Hex:", mainCharHexData);
         console.log("Main Character:", mainCharTranslatedData);
         setMainCharTranslatedName(mainCharTranslatedData);
-  
+
         const rivalHexData = getHexData(arrayBuffer, rivalOffset, rivalSize);
         const rivalTranslatedData = translateHexString(rivalHexData, charMap);
         console.log("Rival Hex:", rivalHexData);
         console.log("Rival:", rivalTranslatedData);
         setRivalTranslatedName(rivalTranslatedData);
 
-        const pokemonSeen = getBinaryData(arrayBuffer, seenOffset, seenSize)
-        console.log(pokemonSeen)
+        const pokemonSeen = getBinaryData(arrayBuffer, seenOffset, seenSize);
+        console.log(pokemonSeen);
 
+        // const pokeNum = 1;
+        // const bytePos = Math.floor((pokeNum - 1) / 8);
+        // const bit = pokeNum - 1 - bytePos * 8;
+        // console.log("bytePos", bytePos);
+        // console.log("bit location: ", bit);
+
+        // console.log("bytePos:", reverseString(pokemonSeen[bytePos]));
+        // console.log("bitItem:", reverseString(pokemonSeen[bytePos])[bit]);
+
+        // if (reverseString(pokemonSeen[bytePos])[bit] == 1) {
+        //   console.log("pokemon seen");
+        // } else {
+        //   console.log("pokemon not found");
+        // }
+
+        function reverseString(str) {
+          let newStr = "";
+          for (let i = str.length - 1; i >= 0; i--) {
+            newStr += str[i];
+          }
+          return newStr;
+        }
+
+        // const pokeQuery = gql`
+        //   query getPokemonSprite($id: Int!) {
+        //     pokemon_v2_pokemonsprites(where: { pokemon_id: { _eq: $id } }) {
+        //       sprites
+        //     }
+        //   }
+        // `;
+        // const { loading, error, data } = useQuery(pokeQuery, {
+        //   client: pokeApiClient,
+        // });
+
+        for (var i = 1; i <= 151; i++) {
+          // Note: Pokémon IDs start from 1
+          const bytePos = Math.floor((i - 1) / 8);
+          const bitPos = i - 1 - bytePos * 8;
+
+          try {
+            if (reverseString(pokemonSeen[bytePos])[bitPos] == 1) {
+              // const pokemon = data.pokemon_v2_pokemonsprites.find(
+              //   (p) => p.pokemon_v2_pokemon.id === i
+              // );
+              // if (pokemon) {
+              //   console.log(
+              //     `Pokemon ${i} seen. Sprite: ${pokemon.sprites.front_default}`
+              //   );
+              // } else {
+              //   console.log(`Pokemon ${i} seen. Sprite not found.`);
+              // }
+              console.log(`Pokemon ${i} found.`);
+            } else {
+              console.log(`Pokemon ${i} not seen.`);
+            }
+          } catch (err) {
+            console.log(`Error occured fetching pokemon:`, err);
+          }
+        }
+
+        setFileError("");
       } catch (error) {
         console.error("Error reading file:", error);
       }
+    } else if (!file) {
+      setFileError("Please upload a file before reading.");
+      return;
     }
   };
-  
-  // Function to get the hex string from the given offset and size
+
+  // fetch hex string
   const getHexData = (arrayBuffer, offset, size) => {
     const view = new DataView(arrayBuffer);
     let hexData = "";
     for (let i = offset; i < offset + size; i++) {
       const byte = view.getUint8(i);
-      hexData += byte.toString(16).padStart(2, "0") + " "; // Add a whitespace between each two-letter group
+      hexData += byte.toString(16).padStart(2, "0") + " ";
     }
-    return hexData.trim(); // Remove trailing whitespace
+    return hexData.trim(); // remove trailing whitespace
   };
 
-  // Function to get binary from the given offset and size
   function getBinaryData(arrayBuffer, offset, length) {
     const uint8Array = new Uint8Array(arrayBuffer, offset, length);
-  
-    let binaryString = '';
+
+    const binaryArray = [];
     for (let i = 0; i < uint8Array.length; i++) {
-      const byteBinary = uint8Array[i].toString(2).padStart(8, '0');
-      binaryString += byteBinary + ' '; // Add a space between each byte
+      const byteBinary = uint8Array[i].toString(2).padStart(8, "0");
+      binaryArray.push(byteBinary);
     }
-  
-    return binaryString.trim(); // Remove trailing space
+
+    return binaryArray;
   }
-  
-  
-  // Function to translate a hex string using the charMap
+
   const translateHexString = (hexString, charMap) => {
     let translatedData = "";
-    const hexPairs = hexString.split(" "); // Split the hex string into pairs
+    const hexPairs = hexString.split(" "); // split the hex string into pairs
     for (let i = 0; i < hexPairs.length; i++) {
       const hexPair = hexPairs[i];
-      const translatedChar = charMap[hexPair] || ""; // Translate the hex pair using the charMap
+      if (hexPair === "50") {
+        break;
+      }
+      const translatedChar = charMap[hexPair] || "";
       translatedData += translatedChar;
     }
     return translatedData;
-  };  
+  };
 
-  // Utility function to convert binary data to ArrayBuffer
   const toArrayBuffer = (fileData) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -132,14 +209,19 @@ export default function ProfileUpload() {
 
   return (
     <div className="card">
-      {/* <code className="highlight">{sessionData && sessionData.session.user.email}</code> */}
       <Link className="button" href="/">
         Go Home
       </Link>
       <div>
         <input type="file" onChange={handleFileChange} />
-        <button className="bg-green-400 py-1 px-2 rounded-md text-white" onClick={handleFileRead}>Read File</button>
+        <button
+          className="rounded-md bg-green-400 py-1 px-2 text-white"
+          onClick={handleFileRead}
+        >
+          Read File
+        </button>
       </div>
+      {fileError && <p className="text-red-600">{fileError}</p>}
       <div>
         <h3>Trainer Name:</h3>
         <code className="highlight">{mainCharTranslatedName}</code>
